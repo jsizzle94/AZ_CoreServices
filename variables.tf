@@ -5,3 +5,12 @@ variable "rglocation" {
 variable "rgname" {
   type = string
 }
+variable "application" {
+  type = string
+}
+variable "vnet_addressspace" {
+  type = list()
+}
+variable "subnets" {
+  type = list()
+}
