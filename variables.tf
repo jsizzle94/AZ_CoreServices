@@ -1,5 +1,5 @@
 variable "rglocation" {
-  type = string
+  type    = string
   default = "UK South"
 }
 variable "rgname" {
@@ -9,8 +9,11 @@ variable "application" {
   type = string
 }
 variable "vnet_addressspace" {
-  type = list()
+  type = list(string)
 }
 variable "subnets" {
-  type = list()
+  type = list(string)
+}
+variable "gwsubnet" {
+  type = list(string)
 }
