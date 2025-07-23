@@ -29,20 +29,58 @@ resource "azurerm_public_ip" "vgwpubip" {
   location            = azurerm_resource_group.coreservices.location
 }
 
-resource "azurerm_virtual_network_gateway" "vgw" {
-  name                = "${var.application}-VGW"
+resource "azurerm_network_interface" "vmnic" {
+  name                = "${var.application}-vmnic"
   location            = azurerm_resource_group.coreservices.location
   resource_group_name = azurerm_resource_group.coreservices.name
 
-  type     = "Vpn"
-  vpn_type = "RouteBased"
-  sku      = "VpnGw1"
-
   ip_configuration {
-    name                          = "vgw-ipconf"
-    public_ip_address_id          = azurerm_public_ip.vgwpubip.id
-    subnet_id                     = azurerm_subnet.gwsubnet
+    name                          = "testconfiguration1"
+    subnet_id                     = azurerm_subnet.subnets[0].id
     private_ip_address_allocation = "Dynamic"
   }
-  enable_bgp = true
 }
+
+
+resource "azurerm_virtual_machine" "name" {
+  name                = "${var.application}-VM"
+  vm_size             = "Stanrdars"
+  location            = azurerm_resource_group.coreservices.location
+  resource_group_name = azurerm_resource_group.coreservices.name
+  storage_image_reference {
+    publisher = "Canonical"
+    offer     = "0001-com-ubuntu-server-jammy"
+    sku       = "22_04-lts"
+    version   = "latest"
+  }
+  storage_os_disk {
+    name              = "myosdisk1"
+    caching           = "ReadWrite"
+    create_option     = "FromImage"
+    managed_disk_type = "Standard_LRS"
+  }
+
+  network_interface_ids = azurerm_network_interface.vmnic
+
+}
+
+
+
+
+# resource "azurerm_virtual_network_gateway" "vgw" {
+# name                = "${var.application}-VGW"
+# location            = azurerm_resource_group.coreservices.location
+# resource_group_name = azurerm_resource_group.coreservices.name
+
+# type     = "Vpn"
+# vpn_type = "RouteBased"
+# sku      = "VpnGw1"
+
+# ip_configuration {
+#   name                          = "vgw-ipconf"
+#   public_ip_address_id          = azurerm_public_ip.vgwpubip.id
+#   subnet_id                     = azurerm_subnet.gwsubnet
+#   private_ip_address_allocation = "Dynamic"
+# }
+# enable_bgp = true
+# }
