@@ -11,7 +11,7 @@ resource "azurerm_virtual_network" "hubnetwork" {
 resource "azurerm_subnet" "subnets" {
   count                = length(var.subnets)
   address_prefixes     = [var.subnets[count.index]]
-  name                 = "${var.application}-Sub1"
+  name                 = "${var.application}-Sub${count.index}"
   virtual_network_name = azurerm_virtual_network.hubnetwork.name
   resource_group_name  = azurerm_resource_group.coreservices.name
 }
@@ -21,13 +21,13 @@ resource "azurerm_subnet" "gwsubnet" {
   name                 = "GatewaySubnet"
   resource_group_name  = azurerm_resource_group.coreservices.name
 }
-resource "azurerm_public_ip" "vgwpubip" {
-  name                = "${var.application}-VGWIP"
-  allocation_method   = "Dynamic"
-  sku                 = "Basic"
-  resource_group_name = azurerm_resource_group.coreservices.name
-  location            = azurerm_resource_group.coreservices.location
-}
+# resource "azurerm_public_ip" "vgwpubip" {
+#   name                = "${var.application}-VGWIP"
+#   allocation_method   = "Dynamic"
+#   sku                 = "Basic"
+#   resource_group_name = azurerm_resource_group.coreservices.name
+#   location            = azurerm_resource_group.coreservices.location
+# }
 
 resource "azurerm_network_interface" "vmnic" {
   name                = "${var.application}-vmnic"
@@ -42,9 +42,9 @@ resource "azurerm_network_interface" "vmnic" {
 }
 
 
-resource "azurerm_virtual_machine" "name" {
+resource "azurerm_virtual_machine" "testvm" {
   name                = "${var.application}-VM"
-  vm_size             = "Stanrdars"
+  vm_size             = "Standard_B1s"
   location            = azurerm_resource_group.coreservices.location
   resource_group_name = azurerm_resource_group.coreservices.name
   storage_image_reference {
@@ -61,6 +61,14 @@ resource "azurerm_virtual_machine" "name" {
   }
 
   network_interface_ids = [azurerm_network_interface.vmnic.id]
+  os_profile {
+    admin_password = "Butillaw7970!"
+    admin_username = "jsadmin"
+    computer_name = "${var.application}-vm"
+  }
+  os_profile_windows_config {
+provision_vm_agent = true
+}
 
 }
 
