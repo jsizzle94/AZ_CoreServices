@@ -14,3 +14,6 @@ variable "subnets" {
 variable "gwsubnet" {
   type = list(string)
 }
+variable "bastionsubnet" {
+  type = list(string)
+}

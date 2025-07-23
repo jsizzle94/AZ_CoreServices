@@ -21,13 +21,30 @@ resource "azurerm_subnet" "gwsubnet" {
   name                 = "GatewaySubnet"
   resource_group_name  = azurerm_resource_group.coreservices.name
 }
-# resource "azurerm_public_ip" "vgwpubip" {
-#   name                = "${var.application}-VGWIP"
-#   allocation_method   = "Dynamic"
-#   sku                 = "Basic"
-#   resource_group_name = azurerm_resource_group.coreservices.name
-#   location            = azurerm_resource_group.coreservices.location
-# }
+
+resource "azurerm_subnet" "bastionsubnet" {
+  address_prefixes     = var.bastionsubnet
+  virtual_network_name = azurerm_virtual_network.hubnetwork.name
+  name                 = "AzureBastionSubnet"
+  resource_group_name  = azurerm_resource_group.coreservices.name
+  
+}
+resource "azurerm_public_ip" "bastionip" {
+  name                = "${var.application}-bastionip"
+  allocation_method   = "Static"
+  sku                 = "Standard"
+  resource_group_name = azurerm_resource_group.coreservices.name
+  location            = azurerm_resource_group.coreservices.location
+}
+
+resource "azurerm_public_ip" "vgwpubip" {
+  name                = "${var.application}-VGWIP"
+  allocation_method   = "Static"
+  sku                 = "Standard"
+  resource_group_name = azurerm_resource_group.coreservices.name
+  location            = azurerm_resource_group.coreservices.location
+}
+
 
 resource "azurerm_network_interface" "vmnic" {
   name                = "${var.application}-vmnic"
@@ -72,23 +89,45 @@ provision_vm_agent = true
 
 }
 
+resource "azurerm_bastion_host" "mybastion" {
+  name = "mybastionhost"
+  location = azurerm_resource_group.coreservices.location
+  resource_group_name = azurerm_resource_group.coreservices.name
+
+  ip_configuration {
+    name                 = "configuration"
+    subnet_id            = azurerm_subnet.bastionsubnet.id
+    public_ip_address_id = azurerm_public_ip.bastionip.id
+  }
+}
+  
 
 
 
-# resource "azurerm_virtual_network_gateway" "vgw" {
-# name                = "${var.application}-VGW"
-# location            = azurerm_resource_group.coreservices.location
-# resource_group_name = azurerm_resource_group.coreservices.name
 
-# type     = "Vpn"
-# vpn_type = "RouteBased"
-# sku      = "VpnGw1"
+resource "azurerm_virtual_network_gateway" "vgw" {
+name                = "${var.application}-VGW"
+location            = azurerm_resource_group.coreservices.location
+resource_group_name = azurerm_resource_group.coreservices.name
 
-# ip_configuration {
-#   name                          = "vgw-ipconf"
-#   public_ip_address_id          = azurerm_public_ip.vgwpubip.id
-#   subnet_id                     = azurerm_subnet.gwsubnet
-#   private_ip_address_allocation = "Dynamic"
-# }
-# enable_bgp = true
-# }
+type     = "Vpn"
+vpn_type = "RouteBased"
+sku      = "VpnGw1"
+
+ip_configuration {
+  name                          = "vgw-ipconf"
+  public_ip_address_id          = azurerm_public_ip.vgwpubip.id
+  subnet_id                     = azurerm_subnet.gwsubnet.id
+  private_ip_address_allocation = "Dynamic"
+}
+enable_bgp = true
+}
+
+resource "azurerm_local_network_gateway" "mgygw" {
+  resource_group_name = azurerm_resource_group.coreservices.name
+  name = "mygw"
+  gateway_fqdn = "jamiesharpe.asuscomm.com"
+  location = azurerm_resource_group.coreservices.location
+  address_space = ["192.168.50.0/24"]
+}
+
