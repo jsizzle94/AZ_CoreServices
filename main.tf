@@ -48,9 +48,9 @@ resource "azurerm_virtual_machine" "name" {
   location            = azurerm_resource_group.coreservices.location
   resource_group_name = azurerm_resource_group.coreservices.name
   storage_image_reference {
-    publisher = "Canonical"
-    offer     = "0001-com-ubuntu-server-jammy"
-    sku       = "22_04-lts"
+    publisher = "MicrosoftWindowsServer"
+    offer     = "WindowsServer"
+    sku       = "2022-datacenter-azure-edition"
     version   = "latest"
   }
   storage_os_disk {
@@ -60,7 +60,7 @@ resource "azurerm_virtual_machine" "name" {
     managed_disk_type = "Standard_LRS"
   }
 
-  network_interface_ids = azurerm_network_interface.vmnic
+  network_interface_ids = [azurerm_network_interface.vmnic.id]
 
 }
 
