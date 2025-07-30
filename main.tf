@@ -128,6 +128,7 @@ resource "azurerm_local_network_gateway" "mgygw" {
   name = "mygw"
   gateway_fqdn = "jamiesharpe.asuscomm.com"
   location = azurerm_resource_group.coreservices.location
-  address_space = ["192.168.50.0/24"]
+  address_space = ["172.16.0.0/24"]
+  
 }
 
